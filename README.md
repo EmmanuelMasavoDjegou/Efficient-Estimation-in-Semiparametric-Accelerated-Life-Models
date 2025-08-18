@@ -1,5 +1,3 @@
-# Efficient Estimation in Semiparametric Accelerated Life Models
-
 ## To-Do List
 
 ### 📚 Literature Review
