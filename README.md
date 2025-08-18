@@ -9,14 +9,14 @@
 
 ### 🧪 Simulation
 - [x] Design simulation scenarios
-- [x] Implement simulation code (R and/or Matlab)
+- [ ] Implement simulation code (R and/or Matlab)
 - [ ] Analyze simulation results
 
 ### 📊 Application
 - [x] Identify real-world dataset
 - [x] Preprocess data in R
-- [x] Fit model in Matlab
-- [x] Perform diagnostics in R
+- [ ] Fit model in Matlab
+- [ ] Perform diagnostics in R
 - [ ] Summarize findings
 
 ### 📝 Paper
