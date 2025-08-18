@@ -1,4 +1,4 @@
-# Efficient Estimation in Semiparametric Accelerated Life Models for Recurrent Events
+# Efficient Estimation in Semiparametric Accelerated Life Models
 
 ## To-Do List
 
