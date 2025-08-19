@@ -1,11 +1,10 @@
 % Parameters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-alpha = 1.5;                                                                                       %
-gamma = 1.5;                                                                                       %
-B1 = 10;                                                                                           %
-B2 = 10;                                                                                           %
-tau_max = 3.5; % Maximum value for tau                                                             %                                              
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+alpha = 1.5;                                                                                       
+gamma = 1.5;                                                                                       
+B1 = 1500;                                                                                           
+B2 = 1500;                                                                                           
+tau_max = 3.5; % Maximum value for tau                                                                                                           
+%-------------------------------------
 
 function data_cp = generate_recurrent_data_cp(n, tau_max, alpha, gamma)
     % Distribution: V ~ Weibull(1.5, 1.5), Z1, Z2, Z3 ~ Binomial(n, p)
@@ -401,16 +400,18 @@ function lambda_hat = Lambda_G_M(theta_G_M, t, data_cp)
     lambda_hat = total_sum;
 end
 
-function [lambda_hat_t1, lambda_hat_t2] = evaluate_Lambda_G_M(theta_G_M, data_cp)
-    % Evaluate Lambda_G_M at t = 1 and t = 3 for three covariates
+function [lambda_hat_t1, lambda_hat_t2, lambda_hat_t3] = evaluate_Lambda_G_M(theta_G_M, data_cp)
+    % Evaluate Lambda_G_M at t = 180, t = 365, t = 730 for three covariates
 
     % Time points for evaluation
-    t1 = 1;
-    t2 = 3;
+    t1 = 180;
+    t2 = 365;
+    t3 = 730;
 
     % Compute Lambda_G_M at t1 and t2
     lambda_hat_t1 = Lambda_G_M(theta_G_M, t1, data_cp);
     lambda_hat_t2 = Lambda_G_M(theta_G_M, t2, data_cp);
+    lambda_hat_t3 = Lambda_G_M(theta_G_M, t3, data_cp);
 end
 
 
@@ -496,22 +497,62 @@ function A_hat_B_tilde = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t, data_cp, B)
 
 end
 
-function [Sigma_Lambda_2_G_M_t1, Sigma_Lambda_2_G_M_t2] = evaluate_Sigma_Lambda_2_G_M(theta_G_M, Gamma_hat_G, data_cp, B)
-    % Evaluate Sigma_Lambda_2_G_M at t = 1 and t = 3 for three covariates
+function [Sigma_Lambda_2_G_M_t1, Sigma_Lambda_2_G_M_t2, Sigma_Lambda_2_G_M_t3] = evaluate_Sigma_Lambda_2_G_M(theta_G_M, Gamma_hat_G, data_cp, B)
+    % Evaluate Sigma_Lambda_2_G_M at t = 180, t = 365, t = 730 for three covariates
 
-    % Evaluate at t = 1
-    t1 = 1;
+    % Evaluate at t = 180
+    t1 = 180;
     first_term_t1 = First_Term_G_M(theta_G_M, t1, data_cp);
     A_hat_t1 = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t1, data_cp, B);
     Sigma_Lambda_2_G_M_t1 = first_term_t1 + (A_hat_t1' * Gamma_hat_G * A_hat_t1);
 
-    % Evaluate at t = 3
-    t2 = 3;
+    % Evaluate at t = 365
+    t2 = 365;
     first_term_t2 = First_Term_G_M(theta_G_M, t2, data_cp);
     A_hat_t2 = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t2, data_cp, B);
     Sigma_Lambda_2_G_M_t2 = first_term_t2 + (A_hat_t2' * Gamma_hat_G * A_hat_t2);
+    
+    % Evaluate at t = 730
+    t3 = 730;
+    first_term_t3 = First_Term_G_M(theta_G_M, t3, data_cp);
+    A_hat_t3 = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t3, data_cp, B);
+    Sigma_Lambda_2_G_M_t3 = first_term_t3 + (A_hat_t3' * Gamma_hat_G * A_hat_t3);
+
+
 end
 
+
+% Plot Objective Function
+
+function plot_objective_function(data_cp)
+    % Define a grid of theta values for theta(1) and theta(2)
+    theta1_values = linspace(-1, 1, 10); % Range for theta(1)
+    theta2_values = linspace(-1, 1, 10); % Range for theta(2)
+    
+    % Initialize matrix to store objective function values
+    obj_values = zeros(length(theta1_values), length(theta2_values));
+    
+    % Fix theta(3) to a constant value (for example, 0.6)
+    theta3_fixed = 0.6;
+    
+    % Loop through values of theta(1) and theta(2) to compute the objective function
+    for i = 1:length(theta1_values)
+        for j = 1:length(theta2_values)
+            theta = [theta1_values(i); theta2_values(j); theta3_fixed]; % Create 3x1 theta vector
+            % Compute the objective function value for each (theta1, theta2)
+            obj_values(i, j) = objective_function(theta, data_cp);
+        end
+    end
+    
+    % Create a surface plot of the objective function
+    figure;
+    surf(theta1_values, theta2_values, obj_values');
+    xlabel('Theta 1');
+    ylabel('Theta 2');
+    zlabel('Objective Function Value');
+    title('Objective Function vs Theta(1) and Theta(2)');
+    colorbar; % Add colorbar to visualize objective function values
+end
 
 % API MODEL
 
@@ -883,14 +924,17 @@ function Lambda_0_t = Lambda_G_P(theta, data_cp, t)
 end
 
 
-% Function to evaluate Lambda_G_P at t = 1 and t = 3
-function [lambda_hat_t1, lambda_hat_t2] = evaluate_Lambda_G_P(theta_G_P, data_cp)
-    % Efficiently evaluate Lambda_G_P at t = 1 and t = 3
-    t1 = 1;
+% Function to evaluate Lambda_G_P at t = 180, t = 360, t = 730
+function [lambda_hat_t1, lambda_hat_t2, lambda_hat_t3] = evaluate_Lambda_G_P(theta_G_P, data_cp)
+    % Efficiently evaluate Lambda_G_P at t = 180, t = 360, t = 730
+    t1 = 180;
     lambda_hat_t1 = Lambda_G_P(theta_G_P, data_cp, t1);
 
-    t2 = 3;
+    t2 = 365;
     lambda_hat_t2 = Lambda_G_P(theta_G_P, data_cp, t2);
+
+    t3 = 730;
+    lambda_hat_t3 = Lambda_G_P(theta_G_P, data_cp, t3);
 end
 
 
@@ -971,18 +1015,23 @@ function A_hat_B_tilde = estimate_A_hat_P(theta_G_P, Gamma_hat_G, t, data_cp, B)
     % Output is a vector, no symmetrization needed
 end
 
-% Function to evaluate Sigma_Lambda_2_G_M at t = 1 and t = 3
-function [Sigma_Lambda_2_G_P_t1, Sigma_Lambda_2_G_P_t2] = evaluate_Sigma_Lambda_2_G_P(theta_G_P, Gamma_hat_G, data_cp, B)
-    % Evaluate Sigma_Lambda_2_G_P at t = 1 and t = 3 for vector-valued theta
-    t1 = 1;
+% Function to evaluate Sigma_Lambda_2_G_M at t = 180, t = 365, t = 730
+function [Sigma_Lambda_2_G_P_t1, Sigma_Lambda_2_G_P_t2, Sigma_Lambda_2_G_P_t3] = evaluate_Sigma_Lambda_2_G_P(theta_G_P, Gamma_hat_G, data_cp, B)
+    % Evaluate Sigma_Lambda_2_G_P at t = 180, t = 365, t = 730 for vector-valued theta
+    t1 = 180;
     first_term_t1 = First_Term_G_P(theta_G_P, data_cp, t1);
     A_hat_t1 = estimate_A_hat_P(theta_G_P, Gamma_hat_G, t1, data_cp, B);
     Sigma_Lambda_2_G_P_t1 = first_term_t1 + (A_hat_t1' * Gamma_hat_G * A_hat_t1);
 
-    t2 = 3;
+    t2 = 365;
     first_term_t2 = First_Term_G_P(theta_G_P, data_cp, t2);
     A_hat_t2 = estimate_A_hat_P(theta_G_P, Gamma_hat_G, t2, data_cp, B);
     Sigma_Lambda_2_G_P_t2 = first_term_t2 + (A_hat_t2' * Gamma_hat_G * A_hat_t2);
+
+    t3 = 730;
+    first_term_t3 = First_Term_G_P(theta_G_P, data_cp, t3);
+    A_hat_t3 = estimate_A_hat_P(theta_G_P, Gamma_hat_G, t3, data_cp, B);
+    Sigma_Lambda_2_G_P_t3 = first_term_t3 + (A_hat_t3' * Gamma_hat_G * A_hat_t3);
 end
 
 % Plot Objective Function
@@ -1248,44 +1297,43 @@ end
 
 % Estimating Lambda_LR_M
 function lambda_hat = Lambda_LR_M(theta_LR_M, t, data_cp)
-    % Vectorized Lambda_LR_M estimation for three covariates Z1, Z2, Z3
+    % Lambda_LR_M: Estimate cumulative baseline hazard for LR-M model
     % theta_LR_M: column vector (3x1)
-    % Z_i: column vector (3x1)
+    % t: evaluation time
+    % data_cp: input data table with covariates, event times, and censoring
 
-    unique_ids = unique(data_cp.id);
-    n = numel(unique_ids);
+    % Get unique subject IDs
+    ids = unique(data_cp.id);
+    n = numel(ids);
 
-    % Precompute covariates and tau for all individuals
-    Z_mat = zeros(3, n); % 3 x n matrix, each column is Z for one individual
-    tau_vec = zeros(1, n); % tau for each individual
-    for idx = 1:n
-        subj_data = data_cp(data_cp.id == unique_ids(idx), :);
-        Z_mat(:, idx) = [subj_data.Z1(1); subj_data.Z2(1); subj_data.Z3(1)]; % column vector
-        tau_vec(idx) = subj_data.tau(1);
-    end
+    % Precompute covariates and tau for all subjects, matching your reference code style
+    [~, ia] = unique(data_cp.id, 'first');
+    tau_vec = data_cp.tau(ia); % n x 1
+    Z_mat = [data_cp.Z1(ia), data_cp.Z2(ia), data_cp.Z3(ia)]; % n x 3
 
     total_sum = 0;
 
-    % Loop over individuals/events (outer loop only for observed events)
+    % Ensure theta_LR_M is a column vector
+    theta_LR_M = theta_LR_M(:);
+
+    % Loop over subjects and their observed events
     for idx_i = 1:n
-        i_data = data_cp(data_cp.id == unique_ids(idx_i), :);
-        K_i = height(i_data);
-        Z_i = Z_mat(:, idx_i); % column vector
+        i = ids(idx_i);
+        i_rows = (data_cp.id == i);
+        individual_data = data_cp(i_rows, :);
+        Z_i = Z_mat(idx_i, :)';      % 3 x 1 column vector
+        S_vec = individual_data.time; % all event/censor times for subject i
 
-        S_vec = i_data.time(:)'; % 1 x K_i
-
-        % Loop over all events for subject i
-        for jj = 1:K_i
-            S_ij = S_vec(jj);
-
-            % Numerator condition: log(t) - log(S_ij) >= theta' * Z_i
+        for S_ij = S_vec'
+            % Numerator: log(t) - log(S_ij) >= theta' * Z_i
             numerator = (log(t) - log(S_ij)) >= (theta_LR_M' * Z_i);
 
             if numerator
-                % Denominator: vectorized over all subjects
-                Z_diff_mat = Z_i - Z_mat; % 3 x n matrix
-                theta_dot_diff = theta_LR_M' * Z_diff_mat; % 1 x n row vector
-                denom_indicator = (log(tau_vec) - log(S_ij)) >= theta_dot_diff; % 1 x n logical
+                % Denominator: sum over all subjects
+                Z_i_mat = repmat(Z_i', n, 1); % n x 3
+                Z_diff = Z_i_mat - Z_mat;     % n x 3
+                theta_dot_diff = Z_diff * theta_LR_M; % n x 1
+                denom_indicator = (log(tau_vec) - log(S_ij)) >= theta_dot_diff; % n x 1 logical
                 weight_denominator = sum(denom_indicator);
 
                 if weight_denominator > 0
@@ -1298,56 +1346,59 @@ function lambda_hat = Lambda_LR_M(theta_LR_M, t, data_cp)
     lambda_hat = total_sum;
 end
 
-% Function to evaluate Lambda_LR_M at t = 1 and t = 3
-function [lambda_hat_t1, lambda_hat_t2] = evaluate_Lambda_LR_M(theta_LR_M, data_cp)
-    % Generalized evaluation for Lambda_LR_M at two time points
-    t1 = 1;
-    t2 = 3;
+% Function to evaluate Lambda_LR_M at t = 180, t = 365, t = 730
+function [lambda_hat_t1, lambda_hat_t2, lambda_hat_t3] = evaluate_Lambda_LR_M(theta_LR_M, data_cp)
+    % Generalized evaluation for Lambda_LR_M at three time points
+    t1 = 180;
+    t2 = 365;
+    t3 = 730;
 
     lambda_hat_t1 = Lambda_LR_M(theta_LR_M, t1, data_cp);
     lambda_hat_t2 = Lambda_LR_M(theta_LR_M, t2, data_cp);
+    lambda_hat_t3 = Lambda_LR_M(theta_LR_M, t3, data_cp);
 end
 
 
 % Estimating Sigma_Lambda_2_LR_M
 function first_term = First_Term_LR_M(theta_LR_M, t, data_cp)
-    % Vectorized First_Term_LR_M for three covariates Z1, Z2, Z3
-    unique_ids = unique(data_cp.id);
-    n = numel(unique_ids);
+    % First_Term_LR_M: Efficient, vectorized estimation for three covariates
+    % Returns n * sum over (1/denominator^2) for eligible event times
 
-    % Precompute covariates and tau for all individuals
-    Z_mat = zeros(3, n); % 3 x n matrix
-    tau_vec = zeros(1, n); % 1 x n vector
-    for idx = 1:n
-        subj_data = data_cp(data_cp.id == unique_ids(idx), :);
-        Z_mat(:, idx) = [subj_data.Z1(1); subj_data.Z2(1); subj_data.Z3(1)];
-        tau_vec(idx) = subj_data.tau(1);
-    end
+    ids = unique(data_cp.id);
+    n = numel(ids);
+
+    % Pre-extract tau and covariates for all subjects (matches previous style)
+    [~, ia] = unique(data_cp.id, 'first');
+    tau_vec = data_cp.tau(ia);                                 % n x 1
+    Z_mat = [data_cp.Z1(ia), data_cp.Z2(ia), data_cp.Z3(ia)];  % n x 3
 
     total_sum = 0;
 
+    % Ensure theta_LR_M is a column vector
+    theta_LR_M = theta_LR_M(:);
+
+    % Loop over subjects and their observed events
     for idx_i = 1:n
-        i_data = data_cp(data_cp.id == unique_ids(idx_i), :);
-        K_i = height(i_data);
-        Z_i = Z_mat(:, idx_i);
+        i = ids(idx_i);
+        i_rows = (data_cp.id == i);
+        individual_data = data_cp(i_rows, :);
+        Z_i = Z_mat(idx_i, :)';      % 3 x 1 column vector
+        S_vec = individual_data.time; % all event/censor times for subject i
 
-        S_vec = i_data.time(:)'; % 1 x K_i
-
-        for jj = 1:K_i
-            S_ij = S_vec(jj);
-
-            % Numerator condition
-            numerator = log(t) - log(S_ij) >= theta_LR_M(:)' * Z_i;
+        for S_ij = S_vec'
+            % Numerator: log(t) - log(S_ij) >= theta' * Z_i
+            numerator = (log(t) - log(S_ij)) >= (theta_LR_M' * Z_i);
 
             if numerator
-                % Vectorize denominator calculation
-                Z_diff_mat = Z_i - Z_mat; % 3 x n
-                theta_dot_diff = theta_LR_M(:)' * Z_diff_mat; % 1 x n
-                denom_indicator = (log(tau_vec) - log(S_ij)) >= theta_dot_diff; % 1 x n logical
+                % Denominator: sum over all subjects
+                Z_i_mat = repmat(Z_i', n, 1); % n x 3
+                Z_diff = Z_i_mat - Z_mat;     % n x 3
+                theta_dot_diff = Z_diff * theta_LR_M; % n x 1
+                denom_indicator = (log(tau_vec) - log(S_ij)) >= theta_dot_diff; % n x 1 logical
                 weight_denominator = sum(denom_indicator);
 
                 if weight_denominator > 0
-                    total_sum = total_sum + 1 / (weight_denominator^2);
+                    total_sum = total_sum + (1 / (weight_denominator^2));
                 end
             end
         end
@@ -1358,48 +1409,61 @@ end
 
 % Estimate A_hat
 function A_hat_B_tilde = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t, data_cp, B)
-    n = numel(unique(data_cp.id));
+    % Efficient vectorized estimation for three covariates using multivariate bootstrap (LR-M version)
+
+    ids = unique(data_cp.id);
+    n = numel(ids);
+
+    % Covariance matrix: ensure correct dimension and scaling
     cov_matrix = (1/n) * Gamma_hat_LR;  % 3x3 covariance matrix
 
-    % Bootstrap samples of theta: each row is a 1x3 vector
-    theta_tilde = mvnrnd(theta_LR_M', cov_matrix, B);  % B x 3
+    % Bootstrap samples of theta: each column is a 3x1 vector
+    theta_tilde = mvnrnd(theta_LR_M(:)', cov_matrix, B)';  % 3 x B
 
-    % Compute Lambda_LR_M for theta_LR_M and for each bootstrap theta_tilde
-    lambda_hat_theta_LR = Lambda_LR_M(theta_LR_M, t, data_cp);    % scalar
+    % Compute Lambda_LR_M for all bootstrap samples and the original estimate
+    lambda_hat_theta_LR = Lambda_LR_M(theta_LR_M(:), t, data_cp); % scalar
     lambda_hat_tilde = zeros(1, B);
 
     for k = 1:B
-        lambda_hat_tilde(k) = Lambda_LR_M(theta_tilde(:,k), t, data_cp);   % scalar
+        lambda_hat_tilde(k) = Lambda_LR_M(theta_tilde(:, k), t, data_cp);
     end
 
     % Construct Z and Y for regression
-    Z = [ones(B, 1), (theta_LR_M' - theta_tilde')]; % B x 4 (if theta has 3 elements)
-    Y = lambda_hat_tilde' - lambda_hat_theta_LR; % B x 1
+    Z = [ones(B, 1), (theta_LR_M(:)' - theta_tilde')]; % B x 4
+    Y = (lambda_hat_tilde' - lambda_hat_theta_LR);     % B x 1
 
-    % Linear regression (multivariate theta, scalar Y)
-    A_hat_B_tilde = (Z' * Z) \ (Z' * Y); % (4 x B) * (B x 1) = 4 x 1
+    % OLS regression: (Z'Z)^(-1) Z'Y
+    A_hat_B_tilde_full = (Z' * Z) \ (Z' * Y);          % 4 x 1
 
-    % Remove intercept (first row), keep only coefficient part
-    A_hat_B_tilde = A_hat_B_tilde(2:end, :); % 3 x 1
+    % Remove intercept row (first row)
+    A_hat_B_tilde = A_hat_B_tilde_full(2:end, :);      % 3 x 1
+
+    % Symmetrize (for vector, this is a no-op, but included for consistency)
     A_hat_B_tilde = (1/2) * (A_hat_B_tilde + A_hat_B_tilde);
 end
 
-% Function to evaluate Sigma_Lambda_2_LR_M at t = 1 and t = 3
-function [Sigma_Lambda_2_LR_M_t1, Sigma_Lambda_2_LR_M_t2] = evaluate_Sigma_Lambda_2_LR_M(theta_LR_M, Gamma_hat_LR, data_cp, B)
+% Function to evaluate Sigma_Lambda_2_LR_M at t = 180, t = 365, t = 730
+function [Sigma_Lambda_2_LR_M_t1, Sigma_Lambda_2_LR_M_t2, Sigma_Lambda_2_LR_M_t3] = evaluate_Sigma_Lambda_2_LR_M(theta_LR_M, Gamma_hat_LR, data_cp, B)
     % Generalized evaluation of Sigma_Lambda_2_LR_M for vector-valued theta (three covariates)
-    % Evaluates at t = 1 and t = 3
+    % Evaluates at t = 180, t = 365, t = 730
 
-    % Evaluate at t = 1
-    t1 = 1;
+    % Evaluate at t = 180
+    t1 = 180;
     first_term_t1 = First_Term_LR_M(theta_LR_M, t1, data_cp);
     A_hat_t1 = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t1, data_cp, B); % 3x1 vector
     Sigma_Lambda_2_LR_M_t1 = first_term_t1 + (A_hat_t1' * Gamma_hat_LR * A_hat_t1); % scalar
 
-    % Evaluate at t = 3
-    t2 = 3;
+    % Evaluate at t = 365
+    t2 = 365;
     first_term_t2 = First_Term_LR_M(theta_LR_M, t2, data_cp);
     A_hat_t2 = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t2, data_cp, B); % 3x1 vector
     Sigma_Lambda_2_LR_M_t2 = first_term_t2 + (A_hat_t2' * Gamma_hat_LR * A_hat_t2); % scalar
+
+    % Evaluate at t = 730
+    t3 = 730;
+    first_term_t3 = First_Term_LR_M(theta_LR_M, t3, data_cp);
+    A_hat_t3 = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t3, data_cp, B); % 3x1 vector
+    Sigma_Lambda_2_LR_M_t3 = first_term_t3 + (A_hat_t3' * Gamma_hat_LR * A_hat_t3); % scalar
 end
 
 % API MODEL
@@ -1627,14 +1691,17 @@ function Lambda_0_t = Lambda_LR_P(theta, data_cp, t)
     Lambda_0_t = total_sum;
 end
 
-% Function to evaluate Lambda_LR_P at t = 1 and t = 3
-function [lambda_hat_t1, lambda_hat_t2] = evaluate_Lambda_LR_P(theta_LR_P, data_cp)
-    % Evaluate Lambda_LR_P at two time points: t = 1 and t = 3
-    t1 = 1;
+% Function to evaluate Lambda_LR_P at t = 180, t = 365, t = 730
+function [lambda_hat_t1, lambda_hat_t2, lambda_hat_t3] = evaluate_Lambda_LR_P(theta_LR_P, data_cp)
+    % Evaluate Lambda_LR_P at two time points: t = 180, t = 365, t = 730
+    t1 = 180;
     lambda_hat_t1 = Lambda_LR_P(theta_LR_P, data_cp, t1);
 
-    t2 = 3;
+    t2 = 365;
     lambda_hat_t2 = Lambda_LR_P(theta_LR_P, data_cp, t2);
+
+    t3 = 730;
+    lambda_hat_t3 = Lambda_LR_P(theta_LR_P, data_cp, t3);
 end
 
 % Estimating Sigma_Lambda_2_LR_P
@@ -1718,22 +1785,28 @@ function A_hat_B_tilde = estimate_A_hat_P_LR(theta_LR_P, Gamma_hat_LR, t, data_c
 end
 
 
-% Function to evaluate Sigma_Lambda_2_LR_M at t = 0.5 and t = 1.5
-function [Sigma_Lambda_2_LR_P_t1, Sigma_Lambda_2_LR_P_t2] = evaluate_Sigma_Lambda_2_LR_P(theta_LR_P, Gamma_hat_LR, data_cp, B)
-    % Generalized evaluation of Sigma_Lambda_2_LR_P for vector-valued theta (multi-covariate API model)
-    % Evaluates at t = 1 and t = 3
+% Function to evaluate Sigma_Lambda_2_LR_M at t = 180, t = 365, t = 730
+function [Sigma_Lambda_2_LR_P_t1, Sigma_Lambda_2_LR_P_t2, Sigma_Lambda_2_LR_P_t3] = evaluate_Sigma_Lambda_2_LR_P(theta_LR_P, Gamma_hat_LR, data_cp, B)
+    % Generalized evaluation of Sigma_Lambda_2_LR_P for vector-valued theta 
+    % Evaluates at t = 180, t = 365, t = 730
 
-    % Evaluate at t = 1
-    t1 = 1;
+    % Evaluate at t = 180
+    t1 = 180;
     first_term_t1 = First_Term_LR_P(theta_LR_P, data_cp, t1);
     A_hat_t1 = estimate_A_hat_P_LR(theta_LR_P, Gamma_hat_LR, t1, data_cp, B); % px1 vector
     Sigma_Lambda_2_LR_P_t1 = first_term_t1 + (A_hat_t1' * Gamma_hat_LR * A_hat_t1); % scalar
 
-    % Evaluate at t = 3
-    t2 = 3;
+    % Evaluate at t = 365
+    t2 = 365;
     first_term_t2 = First_Term_LR_P(theta_LR_P, data_cp, t2);
     A_hat_t2 = estimate_A_hat_P_LR(theta_LR_P, Gamma_hat_LR, t2, data_cp, B); % px1 vector
     Sigma_Lambda_2_LR_P_t2 = first_term_t2 + (A_hat_t2' * Gamma_hat_LR * A_hat_t2); % scalar
+
+    % Evaluate at t = 730
+    t3 = 730;
+    first_term_t3 = First_Term_LR_P(theta_LR_P, data_cp, t3);
+    A_hat_t3 = estimate_A_hat_P_LR(theta_LR_P, Gamma_hat_LR, t3, data_cp, B); % px1 vector
+    Sigma_Lambda_2_LR_P_t3 = first_term_t3 + (A_hat_t3' * Gamma_hat_LR * A_hat_t3); % scalar
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1788,15 +1861,14 @@ for i = 1:3
 end
 
 % Calculate Gamma for
-% theta_g_k
+% theta_g
 estimated_gamma_g_p = num_unique_ids * (result_subtract)*(result_subtract)';
 
 % Calculate Lambda_hat_g_p
-[Lambda_hat_g_p_t1, Lambda_hat_g_p_t2] = evaluate_Lambda_G_P(estimated_theta_g_p, data_cp);
+[Lambda_hat_g_p_t1, Lambda_hat_g_p_t2, Lambda_hat_g_p_t3] = evaluate_Lambda_G_P(estimated_theta_g_p, data_cp);
             
 % Calcualte Sigma_Lambda_2_G_P
-[Sigma_Lambda_2_g_p_t1, Sigma_Lambda_2_g_p_t2] = evaluate_Sigma_Lambda_2_G_P(estimated_theta_g_p, estimated_gamma_g_p , data_cp, B2);
-
+[Sigma_Lambda_2_g_p_t1, Sigma_Lambda_2_g_p_t2, Sigma_Lambda_2_g_p_t3] = evaluate_Sigma_Lambda_2_G_P(estimated_theta_g_p, estimated_gamma_g_p , data_cp, B2);
 
 fprintf('Estimated Theta (g_p): \n');
 disp(estimated_theta_g_p);
@@ -1810,9 +1882,11 @@ fprintf('Estimated Gamma (g_p): %.4f\n', estimated_gamma_g_p);
 
 fprintf('Lambda Hat g_p at t1: %.4f\n', Lambda_hat_g_p_t1);
 fprintf('Lambda Hat g_p at t2: %.4f\n', Lambda_hat_g_p_t2);
+fprintf('Lambda Hat g_p at t3: %.4f\n', Lambda_hat_g_p_t3);
 
 fprintf('Sigma Lambda 2 g_p at t1: %.4f\n', Sigma_Lambda_2_g_p_t1);
 fprintf('Sigma Lambda 2 g_p at t2: %.4f\n', Sigma_Lambda_2_g_p_t2);
+fprintf('Sigma Lambda 2 g_p at t3: %.4f\n', Sigma_Lambda_2_g_p_t3);
 
 % Display results Log-Rank Weight
 
@@ -1832,14 +1906,23 @@ estimated_gamma_lr_p = d_hat_lr_b_p_inv' * estimated_sigma_lr_p * d_hat_lr_b_p_i
 % Optimize theta_tilde_lr_p
 estimated_theta_tilde_lr_p = optimize_theta_tilde_lr_p(data_cp, estimated_sigma_lr_p);
 
-% Calculate GammaHuang for theta_lr_p 
-estimated_gammahuang_lr_p = (sqrt(n) * (estimated_theta_tilde_lr_p - estimated_theta_lr_p))^2;
+% Initialize the result matrix
+result_subtract1 = zeros(3, 3);
+
+% Loop over each column
+for i = 1:3
+    result_subtract1(:, i) = estimated_theta_tilde_lr_p(:, i) - estimated_theta_lr_p;
+end
+
+% Calculate Gamma for
+% theta_lr
+estimated_gammahuang_lr_p = num_unique_ids * (result_subtract1)*(result_subtract1)';
             
 % Calculate Lambda_hat_lr_p            
-[Lambda_hat_lr_p_t1, Lambda_hat_lr_p_t2] = evaluate_Lambda_LR_P(estimated_theta_lr_p, data_cp);
+[Lambda_hat_lr_p_t1, Lambda_hat_lr_p_t2, Lambda_hat_lr_p_t3] = evaluate_Lambda_LR_P(estimated_theta_lr_p, data_cp);
                       
 % Calcualte Sigma_Lambda_2_LR_P            
-[Sigma_Lambda_2_lr_p_t1, Sigma_Lambda_2_lr_p_t2] = evaluate_Sigma_Lambda_2_LR_P(estimated_theta_lr_p, estimated_gamma_lr_p, data_cp, B2);
+[Sigma_Lambda_2_lr_p_t1, Sigma_Lambda_2_lr_p_t2, Sigma_Lambda_2_lr_p_t3] = evaluate_Sigma_Lambda_2_LR_P(estimated_theta_lr_p, estimated_gamma_lr_p, data_cp, B2);
           
 fprintf('Estimated Theta (lr_p): \n');
 disp(estimated_theta_lr_p);
@@ -1854,6 +1937,8 @@ fprintf('Estimated GammaHuang (lr_p): %.4f\n', estimated_gammahuang_lr_p);
 
 fprintf('Lambda Hat lr_p at t1: %.4f\n', Lambda_hat_lr_p_t1);
 fprintf('Lambda Hat lr_p at t2: %.4f\n', Lambda_hat_lr_p_t2);
+fprintf('Lambda Hat lr_p at t2: %.4f\n', Lambda_hat_lr_p_t3);
 
 fprintf('Sigma Lambda 2 lr_p at t1: %.4f\n', Sigma_Lambda_2_lr_p_t1);
 fprintf('Sigma Lambda 2 lr_p at t2: %.4f\n', Sigma_Lambda_2_lr_p_t2);
+fprintf('Sigma Lambda 2 lr_p at t3: %.4f\n', Sigma_Lambda_2_lr_p_t3);

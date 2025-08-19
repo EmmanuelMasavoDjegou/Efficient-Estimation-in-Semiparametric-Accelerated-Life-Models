@@ -1,10 +1,9 @@
-% Parameters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                                      %                                                 %
+% Parameters                                             %
 alpha = 1.5;
-B1 = 10;                                                                                          %
-B2 = 10;                                                                                          %
-tau_max = 3.5; % Maximum value for tau                                                             %                                              
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+B1 = 1500;                                                                                          
+B2 = 1500;                                                                                          
+tau_max = 3.5; % Maximum value for tau                                                                                                           
+%-------------------------------------
 
 function data_cp = generate_recurrent_data_cp(n, tau_max, alpha)
     % Generate recurrent event data with three covariates Z1, Z2, Z3
@@ -426,16 +425,18 @@ function lambda_hat = Lambda_G_M(theta_G_M, t, data_cp)
     lambda_hat = total_sum;
 end
 
-function [lambda_hat_t1, lambda_hat_t2] = evaluate_Lambda_G_M(theta_G_M, data_cp)
-    % Evaluate Lambda_G_M at t = 1 and t = 3 for three covariates
+function [lambda_hat_t1, lambda_hat_t2, lambda_hat_t3] = evaluate_Lambda_G_M(theta_G_M, data_cp)
+    % Evaluate Lambda_G_M at t = 180, t = 365, t = 730 for three covariates
 
     % Time points for evaluation
-    t1 = 1;
-    t2 = 3;
+    t1 = 180;
+    t2 = 365;
+    t3 = 730;
 
     % Compute Lambda_G_M at t1 and t2
     lambda_hat_t1 = Lambda_G_M(theta_G_M, t1, data_cp);
     lambda_hat_t2 = Lambda_G_M(theta_G_M, t2, data_cp);
+    lambda_hat_t3 = Lambda_G_M(theta_G_M, t3, data_cp);
 end
 
 
@@ -521,22 +522,29 @@ function A_hat_B_tilde = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t, data_cp, B)
 
 end
 
-function [Sigma_Lambda_2_G_M_t1, Sigma_Lambda_2_G_M_t2] = evaluate_Sigma_Lambda_2_G_M(theta_G_M, Gamma_hat_G, data_cp, B)
-    % Evaluate Sigma_Lambda_2_G_M at t = 1 and t = 3 for three covariates
+function [Sigma_Lambda_2_G_M_t1, Sigma_Lambda_2_G_M_t2, Sigma_Lambda_2_G_M_t3] = evaluate_Sigma_Lambda_2_G_M(theta_G_M, Gamma_hat_G, data_cp, B)
+    % Evaluate Sigma_Lambda_2_G_M at t = 180, t = 365, t = 730 for three covariates
 
-    % Evaluate at t = 1
-    t1 = 1;
+    % Evaluate at t = 180
+    t1 = 180;
     first_term_t1 = First_Term_G_M(theta_G_M, t1, data_cp);
     A_hat_t1 = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t1, data_cp, B);
     Sigma_Lambda_2_G_M_t1 = first_term_t1 + (A_hat_t1' * Gamma_hat_G * A_hat_t1);
 
-    % Evaluate at t = 3
-    t2 = 3;
+    % Evaluate at t = 365
+    t2 = 365;
     first_term_t2 = First_Term_G_M(theta_G_M, t2, data_cp);
     A_hat_t2 = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t2, data_cp, B);
     Sigma_Lambda_2_G_M_t2 = first_term_t2 + (A_hat_t2' * Gamma_hat_G * A_hat_t2);
-end
+    
+    % Evaluate at t = 730
+    t3 = 730;
+    first_term_t3 = First_Term_G_M(theta_G_M, t3, data_cp);
+    A_hat_t3 = estimate_A_hat_M(theta_G_M, Gamma_hat_G, t3, data_cp, B);
+    Sigma_Lambda_2_G_M_t3 = first_term_t3 + (A_hat_t3' * Gamma_hat_G * A_hat_t3);
 
+
+end
 
 
 % Plot Objective Function
@@ -851,14 +859,16 @@ function lambda_hat = Lambda_LR_M(theta_LR_M, t, data_cp)
     lambda_hat = total_sum;
 end
 
-% Function to evaluate Lambda_LR_M at t = 1 and t = 3
-function [lambda_hat_t1, lambda_hat_t2] = evaluate_Lambda_LR_M(theta_LR_M, data_cp)
-    % Generalized evaluation for Lambda_LR_M at two time points
-    t1 = 1;
-    t2 = 3;
+% Function to evaluate Lambda_LR_M at t = 180, t = 365, t = 730
+function [lambda_hat_t1, lambda_hat_t2, lambda_hat_t3] = evaluate_Lambda_LR_M(theta_LR_M, data_cp)
+    % Generalized evaluation for Lambda_LR_M at three time points
+    t1 = 180;
+    t2 = 365;
+    t3 = 730;
 
     lambda_hat_t1 = Lambda_LR_M(theta_LR_M, t1, data_cp);
     lambda_hat_t2 = Lambda_LR_M(theta_LR_M, t2, data_cp);
+    lambda_hat_t3 = Lambda_LR_M(theta_LR_M, t3, data_cp);
 end
 
 
@@ -945,22 +955,28 @@ function A_hat_B_tilde = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t, data_c
     A_hat_B_tilde = (1/2) * (A_hat_B_tilde + A_hat_B_tilde);
 end
 
-% Function to evaluate Sigma_Lambda_2_LR_M at t = 1 and t = 3
-function [Sigma_Lambda_2_LR_M_t1, Sigma_Lambda_2_LR_M_t2] = evaluate_Sigma_Lambda_2_LR_M(theta_LR_M, Gamma_hat_LR, data_cp, B)
+% Function to evaluate Sigma_Lambda_2_LR_M at t = 180, t = 365, t = 730
+function [Sigma_Lambda_2_LR_M_t1, Sigma_Lambda_2_LR_M_t2, Sigma_Lambda_2_LR_M_t3] = evaluate_Sigma_Lambda_2_LR_M(theta_LR_M, Gamma_hat_LR, data_cp, B)
     % Generalized evaluation of Sigma_Lambda_2_LR_M for vector-valued theta (three covariates)
-    % Evaluates at t = 1 and t = 3
+    % Evaluates at t = 180, t = 365, t = 730
 
-    % Evaluate at t = 1
-    t1 = 1;
+    % Evaluate at t = 180
+    t1 = 180;
     first_term_t1 = First_Term_LR_M(theta_LR_M, t1, data_cp);
     A_hat_t1 = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t1, data_cp, B); % 3x1 vector
     Sigma_Lambda_2_LR_M_t1 = first_term_t1 + (A_hat_t1' * Gamma_hat_LR * A_hat_t1); % scalar
 
-    % Evaluate at t = 3
-    t2 = 3;
+    % Evaluate at t = 365
+    t2 = 365;
     first_term_t2 = First_Term_LR_M(theta_LR_M, t2, data_cp);
     A_hat_t2 = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t2, data_cp, B); % 3x1 vector
     Sigma_Lambda_2_LR_M_t2 = first_term_t2 + (A_hat_t2' * Gamma_hat_LR * A_hat_t2); % scalar
+
+    % Evaluate at t = 730
+    t3 = 730;
+    first_term_t3 = First_Term_LR_M(theta_LR_M, t3, data_cp);
+    A_hat_t3 = estimate_A_hat_M_LR(theta_LR_M, Gamma_hat_LR, t3, data_cp, B); % 3x1 vector
+    Sigma_Lambda_2_LR_M_t3 = first_term_t3 + (A_hat_t3' * Gamma_hat_LR * A_hat_t3); % scalar
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1019,10 +1035,10 @@ estimated_gamma_g_m = num_unique_ids * (result_subtract)*(result_subtract)';
 
 
 % Calculate Lambda_hat_g_m
-[Lambda_hat_g_m_t1, Lambda_hat_g_m_t2] = evaluate_Lambda_G_M(estimated_theta_g_m, data_cp);
+[Lambda_hat_g_m_t1, Lambda_hat_g_m_t2, Lambda_hat_g_m_t3] = evaluate_Lambda_G_M(estimated_theta_g_m, data_cp);
             
 % Calcualte Sigma_Lambda_2_G_M
-[Sigma_Lambda_2_g_m_t1, Sigma_Lambda_2_g_m_t2] = evaluate_Sigma_Lambda_2_G_M(estimated_theta_g_m, estimated_gamma_g_m , data_cp, B2);
+[Sigma_Lambda_2_g_m_t1, Sigma_Lambda_2_g_m_t2, Sigma_Lambda_2_g_m_t3] = evaluate_Sigma_Lambda_2_G_M(estimated_theta_g_m, estimated_gamma_g_m , data_cp, B2);
 
 
 fprintf('Estimated Theta (g_m): \n');
@@ -1037,10 +1053,11 @@ fprintf('Estimated Gamma (g_m): %.4f\n', estimated_gamma_g_m);
 
 fprintf('Lambda Hat g_m at t1: %.4f\n', Lambda_hat_g_m_t1);
 fprintf('Lambda Hat g_m at t2: %.4f\n', Lambda_hat_g_m_t2);
+fprintf('Lambda Hat g_m at t3: %.4f\n', Lambda_hat_g_m_t3);
 
 fprintf('Sigma Lambda 2 g_m at t1: %.4f\n', Sigma_Lambda_2_g_m_t1);
 fprintf('Sigma Lambda 2 g_m at t2: %.4f\n', Sigma_Lambda_2_g_m_t2);
-
+fprintf('Sigma Lambda 2 g_m at t3: %.4f\n', Sigma_Lambda_2_g_m_t3);
 % Display results Log-Rank Weight
 
 % Calculate theta_lr_m            
@@ -1059,14 +1076,23 @@ estimated_gamma_lr_m = d_hat_lr_b_m_inv' * estimated_sigma_lr_m * d_hat_lr_b_m_i
 % Optimize theta_tilde_lr_m
 estimated_theta_tilde_lr_m = optimize_theta_tilde_lr_m(data_cp, estimated_sigma_lr_m);
 
-% Calculate GammaHuang for theta_lr_m 
-estimated_gammahuang_lr_m = (sqrt(n) * (estimated_theta_tilde_lr_m - estimated_theta_lr_m))^2;
+% Initialize the result matrix
+result_subtract1 = zeros(3, 3);
+
+% Loop over each column
+for i = 1:3
+    result_subtract1(:, i) = estimated_theta_tilde_lr_m(:, i) - estimated_theta_lr_m;
+end
+
+% Calculate Gamma for
+% theta_lr
+estimated_gammahuang_lr_m = num_unique_ids * (result_subtract1)*(result_subtract1)';
             
 % Calculate Lambda_hat_lr_m            
-[Lambda_hat_lr_m_t1, Lambda_hat_lr_m_t2] = evaluate_Lambda_LR_M(estimated_theta_lr_m, data_cp);
+[Lambda_hat_lr_m_t1, Lambda_hat_lr_m_t2, Lambda_hat_lr_m_t3] = evaluate_Lambda_LR_M(estimated_theta_lr_m, data_cp);
                       
 % Calcualte Sigma_Lambda_2_LR_M            
-[Sigma_Lambda_2_lr_m_t1, Sigma_Lambda_2_lr_m_t2] = evaluate_Sigma_Lambda_2_LR_M(estimated_theta_lr_m, estimated_gamma_lr_m, data_cp, B2);
+[Sigma_Lambda_2_lr_m_t1, Sigma_Lambda_2_lr_m_t2, Sigma_Lambda_2_lr_m_t3] = evaluate_Sigma_Lambda_2_LR_M(estimated_theta_lr_m, estimated_gamma_lr_m, data_cp, B2);
           
 fprintf('Estimated Theta (lr_m): \n');
 disp(estimated_theta_lr_m);
@@ -1081,6 +1107,8 @@ fprintf('Estimated GammaHuang (lr_m): %.4f\n', estimated_gammahuang_lr_m);
 
 fprintf('Lambda Hat lr_m at t1: %.4f\n', Lambda_hat_lr_m_t1);
 fprintf('Lambda Hat lr_m at t2: %.4f\n', Lambda_hat_lr_m_t2);
+fprintf('Lambda Hat lr_m at t3: %.4f\n', Lambda_hat_lr_m_t3);
 
 fprintf('Sigma Lambda 2 lr_m at t1: %.4f\n', Sigma_Lambda_2_lr_m_t1);
 fprintf('Sigma Lambda 2 lr_m at t2: %.4f\n', Sigma_Lambda_2_lr_m_t2);
+fprintf('Sigma Lambda 2 lr_m at t3: %.4f\n', Sigma_Lambda_2_lr_m_t3);
