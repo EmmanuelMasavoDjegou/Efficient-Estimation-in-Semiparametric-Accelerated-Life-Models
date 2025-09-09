@@ -7,20 +7,20 @@
 
 ### 🧪 Simulation
 - [x] Design simulation scenarios
-- [ ] Implement simulation code (R and/or Matlab)
-- [ ] Analyze simulation results
+- [x] Implement simulation code (R and/or Matlab)
+- [x] Analyze simulation results
 
 ### 📊 Application
 - [x] Identify real-world dataset
 - [x] Preprocess data in R
-- [ ] Fit model in Matlab
-- [ ] Perform diagnostics in R
-- [ ] Summarize findings
+- [x] Fit model in Matlab
+- [x] Perform diagnostics in R
+- [x] Summarize findings
 
 ### 📝 Paper
 - [x] Draft manuscript sections
-- [ ] Add figures/tables
-- [ ] Revise and finalize
+- [x] Add figures/tables
+- [x] Revise and finalize
 
 ### 📦 R Package Creation
 - [ ] Create the R package for semiparametric accelerated life models
