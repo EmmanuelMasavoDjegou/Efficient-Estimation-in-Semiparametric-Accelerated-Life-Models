@@ -7,7 +7,7 @@
 
 ### 🧪 Simulation
 - [x] Design simulation scenarios
-- [x] Implement simulation code (R and/or Matlab)
+- [x] Implement simulation code (Matlab)
 - [x] Analyze simulation results
 
 ### 📊 Application
