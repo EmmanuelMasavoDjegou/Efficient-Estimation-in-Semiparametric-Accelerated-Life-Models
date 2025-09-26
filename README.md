@@ -21,12 +21,6 @@
 - [x] Draft manuscript sections
 - [x] Add figures/tables
 - [x] Revise and finalize
-
-### 📦 R Package Creation
-- [ ] Create the R package for semiparametric accelerated life models
-- [ ] Add documentation and examples
-- [ ] Test and validate package functionality
-
 ---
 
 ## Folder Structure
