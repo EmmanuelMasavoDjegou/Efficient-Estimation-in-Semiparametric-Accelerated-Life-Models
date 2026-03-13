@@ -17,10 +17,6 @@
 - [x] Perform diagnostics in R
 - [x] Summarize findings
 
-### 📝 Paper
-- [x] Draft manuscript sections
-- [x] Add figures/tables
-- [x] Revise and finalize
 ---
 
 ## Folder Structure
