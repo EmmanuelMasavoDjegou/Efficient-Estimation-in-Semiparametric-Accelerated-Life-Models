@@ -24,4 +24,3 @@
 - 📚 `/Literature_Review`: Key papers, notes, and summaries
 - 🧪 `/Simulation`: Code & results for simulation studies
 - 📊 `/Application`: Scripts and analysis for real data
-- 📝 `/Paper`: Manuscript, figures, tables
